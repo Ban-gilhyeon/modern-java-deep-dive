@@ -298,21 +298,313 @@ stream은 `데이터 처리 연산`을 지원하도록 `소스`에서 `연속된
   - 컬렉션의 주제는 `데이터` 
   - 스트림의 주제는 `계산`
 
-## Optional 
+
+
+### 스트림 사용 절차 
+#### 1. 스트림 만들기 
+- 배열 스트림 : Arrays.streeam()
+- 컬렉션 스트림 : stream()
+```java
+List<String> list = Arrays.asList("A","B","C");
+Stream<String> stream = List.stream();
+```
+#### 2. 중간 연산(가공하기)
+- filtering : filter
+  - 스트림 내 요소들을 하나씩 평가해서 걸래내는 작업, if문 역할
+```java 
+  List<String> list = Arrays.asList("a","b","c");
+Stream<String> stream = list.stream()
+	.filter(list -> list.contains("a"));
+    // 'a'가 들어간 요소만 선택  [a]
+```
+- Mapping : map()
+- 스트림 내의 요소들을 특정값으로 변환하는 작업
+```java
+    Stream<String> stream = list.stream()
+	.map(String::toUpperCase);
+	//[A,B,C]
+    
+    .map(Integers::parseInt);
+    // 문자열 -> 정수로 변환
+```
+- Sorting : sorted()
+- 스트림 내 요소들을 정렬 -> Comparator
+```java
+    Stream<String> stream = list.stream()
+	.sorted() // [a,b,c] 오름차순 정렬
+    .sorted(Comparator.reverseOrder()) // [c,b,a] (내림차순)
+    
+List<String> list = Arrays.asList("a","bb","ccc");
+Stream<String> stream = list.stream()
+	.sorted(Comparator.comparingInt(String::length)) // [ccc,bb,a] //문자열 길이 기준 정렬
+```
+- boxing : boxed()
+- 프리미터? 애기 변수 - > 래퍼 변수
+```java
+.mapToInt(Student::getScore) //student 객체가 가진 score값으로 스트림 재생성.
+			.boxed() //Integer 타입 Stream으로 변환.
+			.forEach(score -> System.out.println(score));
+```
+#### 3. 최종연산(결과만들기) 
+
+흠..아직 이해가..
+
+## :: (더블클론, 이중 콜론 연산자)
+- java 8 부터 사용가능
+- 메소드 레퍼런스(메소드 참조 연산자)라고 불림 
+- 람다식에서 파라미터를 중복해서 사용하고 싶지 않을 때 
+- 람다식과 동일한 처리 방법을 갖긴 하지만 이름으로 기존 메소드를 참조함으로 더욱 보기 쉽게 사용가능..高
+
+### 사용방법
+```java 
+ [인스턴스] :: [메소드명(or new)]
+ ex ) User::gerId
+ ```
+1. 람다 표현식 `() -> {} `에서만 사용 가능 
+2. static 메소드인 경우 인스턴스 대신 클래스 이름으로 사용 가능
+   
+### 예시
+- 리스트를 순회하면서 대문자로 바꿔줄 때 
+  ```java 
+    List<String> testList = Array.asList("one","two","three","four");
+    testList = tesList.stream()
+    .map(a->a.toUpperCase())
+    .collect(Collectors.toList());
+
+    testList = testList
+        .stream()
+        .map(String::toUpperCase) // 이중 콜론 연산자 사용 
+        .collect(Collectors.toList());
+
+    public class TestDto {
+    private Long id;
+    private String name;
+    }
+
+    List<TestDto> testDtoList = new ArrayList<>();
+    testDtoList.add(TestDto.of(1L, "첫번째"));
+    testDtoList.add(TestDto.of(2L, "두번째"));
+
+    // 람다 표현식
+    testDtoList.stream().map(a->a.getId()).collect(Collectors.toList());
+    // 이중 콜론 연산자 사용 
+    testDtoList.stream().map(TestDto::getId).collect(Collectors.toList());
+    //솔직히.. 람다식이.. ㅋㅋ
+  ```
+- static 메소드를 사용할 때 
+```java
+@Getter
+@AllargsConstructor(staticName= "of")
+public class NameDto {
+	private String name;
+}
+    
+List<String> testList = Arrays.asList("one", "two", "three", "four");
+// 람다 표현식 
+testList.stream().map(a->NameDto.of(a)).collect(Collectors.toList())
+// 이중 콜론 연산자 사용 
+testList.stream().map(NameDto::of).collect(Collectors.toList())
+```
+
+
+## Optional(맛보기) 
 - Null Pointer Exception - 가장 많이 발생하는 에러중의 하나
 - 자바에서는 (거의) 모든 것이 래퍼런스 ==> 모든 것이 null이 될 수 있다.
 - 항상 null을 확인할 필요가 있다.
 
 
 - null 쓰지말자 약속 : 계약한다 : 계약을 하고 프로그래밍 한다..?
-- 
 
-  [출처]
+
+## Optional 
+- Optional이란  
+  - java 에서 Optional<T> 클래스를 사용하해 NullPointException (이하`NPE`라고 하겠음)을 방지할 수 있도록 도와준다.
+  - Optional<T> 는 Null이 올 수 있는 값을 감싸는 Wrapper 클래스로 참조하더라도 NPE가 발생하지 않도록 도와준다
+  - Null이라도 바로 NPE가 발생하지 않는다
+  - 클래스 이기에 각종 메소드를 제공해준다.
+  
+### Optional 사용법 
+#### Optional 생성하기 
+- 값이 Null인 경우) Optional.empty()
+  - Optional은 Wrapper 클래스이기 때문에 값이 없을 수도 있음, 이때는 Optional.empty()로 생성 
+  ```java
+  Optional<String> optional = Optional.empty();
+
+        System.out.println("Optional : " + optional); // Optional.empty
+        System.out.println("optioanl.isPresent : " + optional.isPresent()); // false
+
+  ```
+  - Optional 클래스 내부에서 `static` 변수로 EMPTY 객체를 미리 생성해서 가지고 있음 -> 빈 객체를 여러번 생성해야하는 경우 메모리 절약 가능 
+- 값이 Null이 아닌 경우) Optional.of()
+  - 만약 어떤 데이터가 절대 Null이 아니라면 Optional.of()로 생성할 수 있다.
+  - Optional.of()로 Null을 저장하려고 하면 NPE.. (그러면...왜 있는거야..?)
+  - ```java
+    //Optional<String> optioanl = Optioanl.of(); // 인텔리제이에서 컴파일 전에 오류
+    Optional<String> optional = Optional.of("MyName");
+
+        System.out.println("Optional : " + optional); // Optional[Myname]
+        System.out.println("optioanl.isPresent : " + optional.isPresent());// true
+  ![alt text](image-2.png)
+
+- 값이 모호할 때(Null or !Null) Optional.ofNullable()
+  - Optional.ofNullalbe로 생성할 수 있음
+  - 이후에 orElse 또는 orElseGet 메소드를 이용해 값이 없는 경우라도 안전하게 값을 가져올 수 있음
+- ```java
+    class Person{
+        String name;
+
+        public Person(){}
+
+        public String getName() {
+            return this.name;
+        }
+    }
+    public class testMain{
+        public static void main(String[] args) {
+            Person p = new Person();
+            Optional<String> optional = Optional.ofNullable(p.getName());
+
+            System.out.println("Optional : " + optional); // Optional.empty
+            System.out.println("optioanl.isPresent : " + optional.isPresent()); // true
+            String name = optional.orElse("없음"); // 값이 null 이면 "없음" 리턴
+            System.out.println("name : " + name); // 없음
+        }
+    }
+
+### 활용법
+#### Optional 사용법 (1)
+- 문제 : 
+  - 기존에는 아래와 같이 null 검사를 한 후에 null일 경우에는 새로운 객체를 생성했다
+- 해결 : 
+  - Optional<T> 와 Lambda를 이용하면 간단 표현 가능!
+```java
+//java 8 이전
+List<String> names = getNames();
+List<String> tempNames = list != null 
+    ? list 
+    : new ArrayList<>();
+
+// Java8 이후
+List<String> nameList = Optional.ofNullable(getNames())
+    .orElseGet(() -> new ArrayList<>());
+```
+
+#### Optional 사용법 (2)
+- 문제 : 
+  - 예를 들어 아래와 같은 우편번호를 꺼내는 null 검사코드가 있다고 가정
+        
+        ```java
+        public String findPostCode() {
+        UserVO userVO = getUser();
+        if (userVO != null) {
+            Address address = user.getAddress();
+            if (address != null) {
+                String postCode = address.getPostCode();
+                if (postCode != null) {
+                    return postCode;
+                }
+            }
+         }
+        return "우편번호 없음"
+    
+  - Optional 사용 
+  - ```java 
+    public String findPostCode() {
+    // 위의 코드를 Optional로 펼쳐놓으면 아래와 같다.
+    Optional<UserVO> userVO = Optional.ofNullable(getUser());
+    Optional<Address> address = userVO.map(UserVO::getAddress);
+    Optional<String> postCode = address.map(Address::getPostCode);
+    String result = postCode.orElse("우편번호 없음");
+
+    // 그리고 위의 코드를 다음과 같이 축약해서 쓸 수 있다.
+    String result = user.map(UserVO::getAddress)
+        .map(Address::getPostCode)
+        .orElse("우편번호 없음");
+
+#### Optional 사용법 (3)
+```java
+String name = getName();
+String result = "";
+
+try {
+    result = name.toUpperCase();
+} catch (NullPointerException e) {
+    throw new CustomUpperCaseException();
+}
+//아래와 같이 수정 가능 가독성 up
+Optional<String> nameOpt = Optional.ofNullable(getName());
+String result = nameOpt.orElseThrow(CustomUpperCaseExcpetion::new)
+                  .toUpperCase();
+출처: https://mangkyu.tistory.com/70 [MangKyu's Diary:티스토리]
+```
+    
+### 추가 Optional의 orElse와 orElseGet 차이 
+- Optional의 단말 연산에는 OrElse와 orElseGet 메소드가 있음 
+  - orElse : 파라미터로 값을 받음 
+  - orElseGet : 파라미터로 함수형 인터페이스를 받음
+  - ```java 
+    public final class Optional<T> {
+
+    ... // 생략
+
+    public T orElse(T other) {
+        return value != null ? value : other;
+    }
+
+    public T orElseGet(Supplier<? extends T> other) {
+        return value != null ? value : other.get();
+    }
+  - orElse로는 값이, orElseGet으로는 .get()메소드가 넘어감 이로인해 호출 결과가 달라질 수 있음
+  - 아래와 같은 코드는 어떻게 실행될까?
+  - ```java 
+    public void findUserEmailOrElse() {
+    String userEmail = "Empty";
+    String result = Optional.ofNullable(userEmail)
+    	.orElse(getUserEmail());
+        
+    System.out.println(result);
+    }
+
+    public void findUserEmailOrElseGet() {
+        String userEmail = "Empty";
+        String result = Optional.ofNullable(userEmail)
+            .orElseGet(this::getUserEmail);
+            
+        System.out.println(result);
+    }
+
+    private String getUserEmail() {
+        System.out.println(getUserEmail()+"Called");
+        return;
+    }
+  - ![alt text](image-3.png)  
+  - orElse의 경우 
+    1. Optional.ofNullable로 `EMPTY`를 갖는 Optioanl 객체 생성
+    2. getUserEmail() 실행 반환값 orElse 파라미터로 전달
+    3. orElse 호출 `EMPTY`가 Null이 아니므로 EMPTY 출력..
+    >> Optional.orElse()가 값을 파라미터로 받고, orElse 파라미터 값을 넘겨주기 위해 getUseEmail()이 호출되었기 때문 
+  - orElseGet의 경우
+    1. Optional.ofNullabe로 `EMPTY`를 갖는 Optional객체 생성
+    2. getUserEmail() 함수 자체를 orElseGet 파라미터로 전달
+    3. orElseGet 호출 `EMPTY`가 Null이 아니므로 getUserEmail()호출 X  
+
+## UUID 
+
+
+
+
+  
+    
+[출처]
+
+
 
 [YouTube](https://www.youtube.com/watch?v=lIEKOe0bh0M&t=10s/)
 
 [T-story1](https://warpgate3.tistory.com/entry/%EC%9E%90%EB%B0%94%EC%BD%94%EB%93%9C%EB%A1%9C-%EB%B3%B4%EB%8A%94-%ED%95%A8%EC%88%98%ED%98%95-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-Functional-Programming-in-Java/)
 
 [T-stroy2](https://swiftymind.tistory.com/108/)
+
+[T-story3](https://mangkyu.tistory.com/70 )
 
 
